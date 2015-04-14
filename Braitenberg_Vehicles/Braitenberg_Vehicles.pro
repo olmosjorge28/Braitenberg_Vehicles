@@ -13,8 +13,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    cart.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    cart.h
 
 FORMS    += mainwindow.ui
