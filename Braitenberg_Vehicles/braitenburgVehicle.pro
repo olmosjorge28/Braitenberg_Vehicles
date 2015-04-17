@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2015-04-13T18:05:18
+# Project created by QtCreator 2015-04-14T01:10:13
 #
 #-------------------------------------------------
 
@@ -8,15 +8,17 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Braitenberg_Vehicles
+TARGET = braitenburgVehicle
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    cart.cpp
+    vehicle.cpp \
+    lights.cpp
 
 HEADERS  += mainwindow.h \
-    cart.h
+    vehicle.h \
+    lights.h
 
 FORMS    += mainwindow.ui

@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <string>
 #include <iostream>
+#include <QPainter>
 
 using namespace std;
 
@@ -9,150 +9,55 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-    group = new QGraphicsItemGroup(0);
-    light_x_coor = 400;
-    light_y_coor = 300;
-    cart_x_coor = 400;
-    cart_y_coor = 300;
     ui->setupUi(this);
-    scene = new QGraphicsScene(this);
-    scene->addItem(group);
-    ui->graphicsView->setScene(scene);\
-    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
-    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->graphicsView->centerOn(400,300);
-    ui->graphicsView->setMaximumHeight(600);
-    ui->graphicsView->setMaximumWidth(800);
-    ui->graphicsView->AnchorViewCenter;
-    lights.clear();
-}
-
-void MainWindow::on_pushButton_clicked(){
-
-    if(light_x_coor == 0){
-        light_x_coor = 800;
-    }
-    else{
-        light_x_coor-=10;
-    }
-    ui->label->setText(QString::number(light_x_coor));
-}
-void MainWindow::on_pushButton_2_clicked(){
-    if(light_x_coor == 800){
-        light_x_coor = 0;
-    }
-    else{
-        light_x_coor+=10;
-    }
-    ui->label->setText(QString::number(light_x_coor));
-}
-void MainWindow::on_pushButton_3_clicked(){
-    if(light_y_coor == 0){
-        light_y_coor = 600;
-    }
-    else{
-        light_y_coor-=10;
-    }
-    ui->label_2->setText(QString::number(light_y_coor));
+    timer =new QTimer(this);
+    scene.setSceneRect(0,0,800,600);
+    ui->graphicsView->setScene(&scene);
+    ui->graphicsView->setSceneRect(0,0,800,600);
+    connect(timer,SIGNAL(timeout()),this,SLOT(timer_function()));
+    timeIncrement = 1000;
+    timer->start(timeIncrement);
+    ui->graphicsView->show();
 
 }
-void MainWindow::on_pushButton_4_clicked(){
-    if(light_y_coor == 600){
-        light_y_coor = 0;
-    }
-    else{
-        light_y_coor+=10;
-    }
-    ui->label_2->setText(QString::number(light_y_coor));
-}
-void MainWindow::on_pushButton_5_clicked(){
-
-    const QBrush &brush = QBrush(Qt::SolidPattern);
-    //QGraphicsItemGroup *group = new QGraphicsItemGroup(0);
-    QGraphicsEllipseItem* test = new QGraphicsEllipseItem((qreal)light_x_coor,(qreal)light_y_coor,10,10);
-    test->setBrush(brush);
-    //scene->addItem(test);
-    group->addToGroup(test);
-    //scene->addItem(group);//
-    ui->graphicsView->setScene(scene);
-    QPoint* p = new QPoint(light_x_coor, light_y_coor);
-    lights.push_back(p);
-
-    for(int i = 0; i < lights.size(); i++)
-        cout<<lights[i]->x()<< " " << lights[i]->y() << endl << endl;
-}
-
-
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
-void MainWindow::on_pushButton_6_clicked()
+void MainWindow::on_light_clicked()
 {
-    if(cart_x_coor == 0){
-        cart_x_coor = 800;
+    Lights* newLight = new Lights(ui->lightX->value(),ui->lightY->value());
+    cout<< "x = " <<ui->lightX->value()<<" "<< "y=" <<" "<<ui->lightY->value()<<endl;
+    scene.addItem(newLight);
+    lightPoints.push_back(newLight->getLocation());
+    lights.push_back(newLight);
+    for(int i = 0; i < vehicles.size(); i++){
+            vehicles[i]->addLight(newLight);
     }
-    else{
-        cart_x_coor-=10;
-    }
-    ui->label_3->setText(QString::number(cart_x_coor));
+    ui->graphicsView->update();
 }
 
-void MainWindow::on_pushButton_7_clicked()
+void MainWindow::on_vehicle_clicked()
 {
-    if(cart_x_coor == 800){
-        cart_x_coor = 0;
-    }
-    else{
-        cart_x_coor+=10;
-    }
-    ui->label_3->setText(QString::number(cart_x_coor));
+    QGenericMatrix<2,2,double> K;
+    K(0,0) = ui->K_11->value();
+    K(0,1) = ui->K_12->value();
+    K(1,0) = ui->K_21->value();
+    K(1,1) = ui->K_22->value();
+    QPointF Vehicle_Point(ui->vehicleX->value(),ui->vehicleY->value());
+    cout<< "x = " <<ui->vehicleX->value()<<" "<< "y=" <<" "<<ui->vehicleY->value()<<endl;
+    vehicle* new_vehicle = new vehicle(K,Vehicle_Point,lights, timeIncrement);
+    scene.addItem(new_vehicle);
+    vehicles.push_back(new_vehicle);
+    ui->graphicsView->update();
 }
 
-void MainWindow::on_pushButton_8_clicked()
-{
-    if(cart_y_coor == 0){
-        cart_y_coor = 600;
+
+void MainWindow::timer_function(){
+    for(int i=0; i<vehicles.size();i++){
+        vehicles[i]->UpdateVehiclePos();
     }
-    else{
-        cart_y_coor-=10;
-    }
-    ui->label_4->setText(QString::number(cart_y_coor));
-}
-
-void MainWindow::on_pushButton_9_clicked()
-{
-    if(cart_y_coor == 600){
-        cart_y_coor = 0;
-    }
-    else{
-        cart_y_coor+=10;
-    }
-    ui->label_4->setText(QString::number(cart_y_coor));
-}
-
-void MainWindow::on_pushButton_10_clicked()
-{
-    const QBrush &brush = QBrush(Qt::SolidPattern);
-    //QGraphicsItemGroup *group = new QGraphicsItemGroup(0);
-    QGraphicsEllipseItem* test = new QGraphicsEllipseItem((qreal)cart_x_coor,(qreal)cart_y_coor,20,5);
-    test->setBrush(brush);
-    //scene->addItem(test);
-    group->addToGroup(test);
-    //scene->addItem(group);//
-    ui->graphicsView->setScene(scene);
-    QPoint* p = new QPoint(cart_x_coor, cart_y_coor);
-    carts.push_back(p);
-
-    for(int i = 0; i < carts.size(); i++)
-        cout<<carts[i]->x()<< " " << carts[i]->y() << endl << endl;
-}
-
-void MainWindow::paintEvent(QPaintEvent *event)
-{
-
+    ui->graphicsView->update();
 }
